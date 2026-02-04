@@ -6,7 +6,7 @@
  */
 
 // URL del backend API (cambiar después del deploy en Render)
-const API_URL = 'http://localhost:8080/tasks.php'; // Local
+const API_URL = 'https://task-manager-api-qoah.onrender.com/api/tasks.php'; // Local
 // const API_URL = 'https://task-manager-api.onrender.com/api/tasks.php'; // Producción
 
 /**
