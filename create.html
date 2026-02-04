@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Tarea - Task Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="logo">
+                    <i class="fas fa-tasks"></i>
+                    Task Manager
+                </h1>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">
+                        <i class="fas fa-list"></i> Mis Tareas
+                    </a>
+                    <a href="create.html" class="nav-link btn-primary">
+                        <i class="fas fa-plus"></i> Nueva Tarea
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2><i class="fas fa-plus-circle"></i> Nueva Tarea</h2>
+                    <p>Completa el formulario para crear una nueva tarea</p>
+                </div>
+                
+                <div id="alert-container"></div>
+                
+                <form id="taskForm" class="task-form" novalidate>
+                    
+                    <div class="form-group">
+                        <label for="title" class="required">
+                            <i class="fas fa-heading"></i> Título
+                        </label>
+                        <input type="text" 
+                               id="title" 
+                               name="title" 
+                               class="form-control"
+                               placeholder="Ej: Completar proyecto de desarrollo web"
+                               maxlength="100"
+                               required>
+                        <span class="form-hint">Máximo 100 caracteres</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">
+                            <i class="fas fa-align-left"></i> Descripción
+                        </label>
+                        <textarea id="description" 
+                                  name="description" 
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="Describe los detalles de la tarea..."></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="status">
+                                <i class="fas fa-tasks"></i> Estado
+                            </label>
+                            <select id="status" name="status" class="form-control">
+                                <option value="pendiente" selected>Pendiente</option>
+                                <option value="en_proceso">En Proceso</option>
+                                <option value="completada">Completada</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="priority">
+                                <i class="fas fa-exclamation-circle"></i> Prioridad
+                            </label>
+                            <select id="priority" name="priority" class="form-control">
+                                <option value="baja">Baja</option>
+                                <option value="media" selected>Media</option>
+                                <option value="alta">Alta</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="due_date">
+                            <i class="fas fa-calendar-alt"></i> Fecha de Vencimiento
+                        </label>
+                        <input type="date" 
+                               id="due_date" 
+                               name="due_date" 
+                               class="form-control">
+                        <span class="form-hint">Opcional - Fecha límite para completar la tarea</span>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-save"></i> Guardar Tarea
+                        </button>
+                        <a href="index.html" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Task Manager | Desarrollado por Anthony</p>
+            <p class="footer-subtitle">Proyecto de Desarrollo Web - Ingeniería en Software</p>
+        </div>
+    </footer>
+    
+    <script src="js/api.js"></script>
+    <script src="js/validation.js"></script>
+    <script>
+        // Manejar envío del formulario
+        document.getElementById('taskForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validar formulario
+            if (!validateForm()) {
+                return;
+            }
+            
+            // Obtener datos
+            const formData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                status: document.getElementById('status').value,
+                priority: document.getElementById('priority').value,
+                due_date: document.getElementById('due_date').value || null
+            };
+            
+            // Deshabilitar botón
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            
+            try {
+                // Enviar a API
+                const result = await createTask(formData);
+                
+                if (result.success) {
+                    showAlert('Tarea creada exitosamente', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                } else {
+                    showAlert('Error al crear la tarea', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save"></i> Guardar Tarea';
+                }
+            } catch (error) {
+                showAlert('Error de conexión con el servidor', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> Guardar Tarea';
+            }
+        });
+        
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    <i class="fas ${icon}"></i> ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

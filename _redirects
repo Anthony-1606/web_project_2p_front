@@ -1,0 +1,4 @@
+# Redirects para Netlify
+# Esto asegura que todas las rutas funcionen correctamente
+
+/*    /index.html   200
